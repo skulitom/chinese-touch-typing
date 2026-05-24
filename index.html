@@ -106,6 +106,20 @@
     color: var(--wrong);
     border-color: rgba(255, 90, 90, 0.4);
   }
+  .icon-btn.chill-active {
+    color: #ffd166;
+    border-color: rgba(255, 209, 102, 0.55);
+    background: rgba(255, 209, 102, 0.08);
+  }
+  .icon-btn.chill-only { display: none; }
+  body.chill-mode .icon-btn.chill-only { display: flex; }
+  body.chill-mode .stage-dots,
+  body.chill-mode .stat-mastered {
+    opacity: 0.35;
+  }
+  body.chill-mode .title-dot {
+    background: #ffd166;
+  }
   .icon-btn svg {
     width: 18px;
     height: 18px;
@@ -249,7 +263,15 @@
     padding: 0 16px;
     transition: opacity 0.2s;
   }
-  .play-area.hide-pinyin .pinyin { visibility: hidden; }
+  .play-area.hide-translation .translation { visibility: hidden; }
+  .pinyin .letter.hidden-letter {
+    color: var(--dim);
+    opacity: 0.5;
+  }
+  .pinyin .letter.hidden-letter.current {
+    color: var(--tone-color, var(--target));
+    opacity: 0.75;
+  }
 
   .stage-dots {
     display: flex;
@@ -532,7 +554,7 @@
 </head>
 <body>
   <header>
-    <div class="title"><span class="title-dot"></span>中文 · Touch Typing</div>
+    <div class="title"><span class="title-dot"></span><span id="titleText">中文 · Touch Typing</span></div>
     <div class="header-controls">
       <div class="stats">
         <div class="stat">
@@ -551,12 +573,14 @@
           <span class="stat-label">Streak</span>
           <span id="streak" class="stat-value">0</span>
         </div>
-        <div class="stat">
+        <div class="stat stat-mastered">
           <span class="stat-label">Mastered</span>
           <span id="mastered" class="stat-value mastered-val">0<span class="stat-total"> / 0</span></span>
         </div>
       </div>
-      <button id="muteBtn" class="icon-btn" aria-label="Toggle sound" title="Toggle sound (`)"></button>
+      <button id="chillBtn" class="icon-btn" aria-label="Toggle chill mode" title="Chill mode — no pressure, all hints"></button>
+      <button id="hidePinyinBtn" class="icon-btn chill-only" aria-label="Toggle pinyin visibility" title="Hide pinyin in chill mode"></button>
+      <button id="muteBtn"  class="icon-btn" aria-label="Toggle sound" title="Toggle sound (`)"></button>
     </div>
   </header>
 
@@ -1103,37 +1127,48 @@ function parseDict(raw) {
 }
 
 const DICT = parseDict(DICT_RAW);
+const DICT_BY_H = new Map(DICT.map(d => [d.h, d]));
 const TOTAL_CHARS = DICT.length;
 
 // ===================== Mastery system =====================
 // Each character has a `progress` score that goes up on a clean (zero-mistake)
-// completion and down when an attempt contained any mistake. The progress
-// score drives which helpers are visible — and because it can drop, helpers
-// can reappear when the user starts struggling with a character again.
+// completion and down when an attempt contained any mistake. Each progress
+// step strips one specific helper, in this order:
 //
-//   progress 0-2 : stage 0  — pinyin + keyboard-key hint + sound
-//   progress 3-4 : stage 1  — keyboard-key hint + sound       (no pinyin)
-//   progress 5-6 : stage 2  — sound                            (no pinyin, no key hint)
-//   progress 7-9 : stage 3  — nothing                          (pure recall)
-//   progress >= MASTERY_AT  — mastered (no helpers, weighted very low)
+//   p0                       full help: pinyin + kbd-key hint + sound + translation
+//   p1                       kbd-key hint removed
+//   p2                       sound auto-play removed  ← important: sound IS the pinyin,
+//                                                       so it must be gone before
+//                                                       letter-hiding has any bite
+//   p3..(2+pinyinLen)        pinyin letters hidden one at a time, from the end
+//   p(3+pinyinLen)           translation removed (kept until close to the end since
+//                                                  it's contextual, not a typing hint)
+//   p(4+pinyinLen)           = mastered
 //
-// Translation is contextual — it never tells you what to type — so it stays
-// visible at every stage.
-const STAGE_AT = [3, 5, 7];     // progress thresholds for stages 1, 2, 3
-const MASTERY_AT = 10;          // progress at which a character is mastered
-const ACTIVE_POOL_SIZE = 10;    // how many unmastered chars are "in rotation"
+// Since mastery depth scales with pinyin length, longer-pinyin characters need
+// a couple more clean runs to master — which matches how they really are harder.
+const ACTIVE_POOL_SIZE = 10;       // how many unmastered chars are "in rotation"
 const MASTERED_REVIEW_PROB = 0.08; // chance to insert a mastered review
 
-function getStage(stats) {
-  if (!stats) return 0;
-  const p = stats.progress || 0;
-  if (p >= STAGE_AT[2]) return 3;
-  if (p >= STAGE_AT[1]) return 2;
-  if (p >= STAGE_AT[0]) return 1;
-  return 0;
+function getHelpers(progress, pinyinLen) {
+  const p = progress || 0;
+  let lettersHidden = 0;
+  if (p >= 3) lettersHidden = Math.min(p - 2, pinyinLen);
+  return {
+    lettersHidden,
+    showKbdHint:     p < 1,
+    autoSound:       p < 2,
+    showTranslation: p < pinyinLen + 3,
+  };
 }
-function isMastered(stats) {
-  return !!stats && (stats.progress || 0) >= MASTERY_AT;
+function getMasteryAt(pinyinLen) {
+  return pinyinLen + 4;
+}
+function isMastered(stats, hanzi) {
+  if (!stats) return false;
+  const entry = DICT_BY_H.get(hanzi);
+  const len = entry ? entry.t.length : 3;
+  return (stats.progress || 0) >= getMasteryAt(len);
 }
 function emptyStats() {
   return { attempts: 0, errors: 0, mistakesThisAttempt: 0, progress: 0, everMastered: false };
@@ -1164,7 +1199,7 @@ function savePerChar() {
 function countMastered() {
   let n = 0;
   DICT.forEach(d => {
-    if (isMastered(state.perChar.get(d.h))) n++;
+    if (isMastered(state.perChar.get(d.h), d.h)) n++;
   });
   return n;
 }
@@ -1356,7 +1391,9 @@ const state = {
   perChar: new Map(),  // hanzi -> { attempts, errors, mistakesThisAttempt, progress, everMastered }
   recentChars: [],     // recent hanzi shown, to avoid repeats
   muted: localStorage.getItem('ct-muted') === '1',
-  currentStage: 0,     // stage of the currently-shown character (0-3)
+  chillMode: localStorage.getItem('ct-chill') === '1',
+  hidePinyinInChill: localStorage.getItem('ct-chill-hide-pinyin') === '1',
+  currentHelpers: { lettersHidden: 0, showKbdHint: true, autoSound: true, showTranslation: true },
   consecutiveWrongKeys: 0,
   achievements: new Map(),
   lifetime: { totalChars: 0 },
@@ -1404,6 +1441,15 @@ const ICON_MUTED   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 
 // ===================== Selection (adaptive) =====================
 function pickNext() {
+  // Chill mode: ignore the curriculum entirely — uniform random over the whole
+  // dictionary, with the same short avoid-list to prevent immediate repeats.
+  if (state.chillMode) {
+    const avoid = new Set(state.recentChars.slice(-4));
+    let pool = DICT.filter(d => !avoid.has(d.h));
+    if (pool.length === 0) pool = DICT;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
   // Curriculum model: at any moment the user is working on a small "active pool"
   // of up to ACTIVE_POOL_SIZE unmastered characters. The pool is the union of:
   //   1. every character the user has started but not yet mastered, plus
@@ -1414,7 +1460,7 @@ function pickNext() {
   // a scattered draw from the whole dictionary.
   const inProgress = DICT.filter(d => {
     const s = state.perChar.get(d.h);
-    return s && s.attempts > 0 && !isMastered(s);
+    return s && s.attempts > 0 && !isMastered(s, d.h);
   });
   const fresh = DICT.filter(d => {
     const s = state.perChar.get(d.h);
@@ -1427,7 +1473,7 @@ function pickNext() {
 
   // Small probability to surface a previously-mastered character for a quick
   // retention check — only if there's something to review.
-  const masteredPool = DICT.filter(d => isMastered(state.perChar.get(d.h)) && !avoid.has(d.h));
+  const masteredPool = DICT.filter(d => isMastered(state.perChar.get(d.h), d.h) && !avoid.has(d.h));
   if (masteredPool.length > 0 && active.length > 0 && Math.random() < MASTERED_REVIEW_PROB) {
     return masteredPool[Math.floor(Math.random() * masteredPool.length)];
   }
@@ -1447,7 +1493,7 @@ function pickNext() {
     const s = state.perChar.get(d.h);
     if (!s || s.attempts === 0) return 1.5;            // brand-new chars come up a bit more
     const errRate = s.errors / Math.max(1, s.attempts);
-    const progressBoost = (s.progress || 0) * 0.08;    // gentle nudge for near-mastery
+    const progressBoost = (s.progress || 0) * 0.06;    // gentle nudge for near-mastery
     return 1 + errRate * 2 + progressBoost;
   });
   const total = weights.reduce((a,b) => a+b, 0);
@@ -1483,15 +1529,27 @@ function updateMasteredDisplay(opts = {}) {
   }
 }
 
-function renderStageDots(stage, mastered) {
-  // 3 dots that fill as the character progresses, all gold once mastered
+function renderStageDots(helpers, pinyinLen, mastered) {
+  // 4 dots — one per helper layer. Each fills as that layer is removed,
+  // so the dots act as a "what's hiding next" indicator. All gold once
+  // the character is mastered.
+  //   1: keyboard "next key" hint removed
+  //   2: sound auto-play removed
+  //   3: pinyin letters fully hidden
+  //   4: translation removed
   $stageDots.innerHTML = '';
   $stageDots.classList.toggle('is-mastered', !!mastered);
-  for (let i = 0; i < 3; i++) {
+  const layers = [
+    !helpers.showKbdHint,
+    !helpers.autoSound,
+    helpers.lettersHidden >= pinyinLen,
+    !helpers.showTranslation,
+  ];
+  layers.forEach(filled => {
     const d = document.createElement('div');
-    d.className = 'dot' + (i < stage || mastered ? ' filled' : '');
+    d.className = 'dot' + (filled || mastered ? ' filled' : '');
     $stageDots.appendChild(d);
-  }
+  });
 }
 
 function updateMuteUI() {
@@ -1515,6 +1573,71 @@ function replayCurrent() {
     return;
   }
   speak(state.current.h);
+}
+
+// ===================== Chill mode =====================
+// Chill mode = pressure-free exposure practice. All hints are always on,
+// characters are picked uniformly at random from the entire dictionary,
+// and nothing about a character's mastery / errors / lifetime is updated
+// while you practice. Toggle persists across sessions.
+const ICON_CHILL   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+const ICON_EYE     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+const ICON_EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+const $chillBtn = document.getElementById('chillBtn');
+const $hidePinyinBtn = document.getElementById('hidePinyinBtn');
+const $titleText = document.getElementById('titleText');
+
+function chillHelpers(pinyinLen) {
+  return {
+    lettersHidden: state.hidePinyinInChill ? pinyinLen : 0,
+    showKbdHint: true,
+    autoSound: true,
+    showTranslation: true,
+  };
+}
+function updateChillUI() {
+  if ($chillBtn) {
+    $chillBtn.classList.toggle('chill-active', state.chillMode);
+    $chillBtn.innerHTML = ICON_CHILL;
+    $chillBtn.title = state.chillMode
+      ? 'Chill mode ON — click to switch to mastery practice'
+      : 'Chill mode OFF — click for pressure-free practice';
+  }
+  if ($titleText) {
+    $titleText.textContent = state.chillMode ? '中文 · Chill Mode' : '中文 · Touch Typing';
+  }
+  document.body.classList.toggle('chill-mode', state.chillMode);
+}
+function toggleChillMode() {
+  state.chillMode = !state.chillMode;
+  localStorage.setItem('ct-chill', state.chillMode ? '1' : '0');
+  updateChillUI();
+  applyCurrentHelpers();
+}
+function updateHidePinyinUI() {
+  if (!$hidePinyinBtn) return;
+  $hidePinyinBtn.classList.toggle('chill-active', state.hidePinyinInChill);
+  $hidePinyinBtn.innerHTML = state.hidePinyinInChill ? ICON_EYE_OFF : ICON_EYE;
+  $hidePinyinBtn.title = state.hidePinyinInChill
+    ? 'Pinyin hidden — click to show it'
+    : 'Hide pinyin (chill mode)';
+}
+function toggleHidePinyin() {
+  state.hidePinyinInChill = !state.hidePinyinInChill;
+  localStorage.setItem('ct-chill-hide-pinyin', state.hidePinyinInChill ? '1' : '0');
+  updateHidePinyinUI();
+  if (state.chillMode) applyCurrentHelpers();
+}
+function applyCurrentHelpers() {
+  if (!state.current) return;
+  if (state.chillMode) {
+    state.currentHelpers = chillHelpers(state.current.t.length);
+  } else {
+    const s = state.perChar.get(state.current.h) || emptyStats();
+    state.currentHelpers = getHelpers(s.progress, state.current.t.length);
+  }
+  renderCharacter();
+  setExpectedKey();
 }
 
 function buildKeyboard() {
@@ -1547,26 +1670,38 @@ function renderCharacter() {
   $char.textContent = c.h;
   $translation.textContent = c.en || '';
 
-  // Apply visibility based on stage. Translation is always visible — it's
-  // context, not a typing hint.
-  const stage = state.currentStage;
-  const stats = state.perChar.get(c.h);
-  const mastered = isMastered(stats);
-  $playArea.classList.toggle('hide-pinyin', stage >= 1);
-  renderStageDots(stage, mastered);
+  const helpers  = state.currentHelpers;
+  const stats    = state.perChar.get(c.h);
+  const mastered = isMastered(stats, c.h);
 
-  // pinyin: align letter-by-letter against typed form
+  // Translation is the last text-helper to go (close to mastery).
+  $playArea.classList.toggle('hide-translation', !helpers.showTranslation);
+  renderStageDots(helpers, c.t.length, mastered);
+
+  // Render pinyin letter-by-letter. The last `lettersHidden` letters from the
+  // end are replaced with a dim dot — the user knows how many letters remain
+  // but has to recall them. Typed (done) letters always show their real
+  // character as visual confirmation of what was typed.
   $pinyin.innerHTML = '';
   const tone = detectTone(c.p);
   $pinyin.className = 'pinyin tone-' + tone;
   const pinyinChars = [...c.p];
-  const typedChars  = [...c.t];
-  for (let i = 0; i < pinyinChars.length; i++) {
+  const total = pinyinChars.length;
+  for (let i = 0; i < total; i++) {
     const span = document.createElement('span');
     span.className = 'letter';
-    if (i < state.typedIndex) span.classList.add('done');
-    else if (i === state.typedIndex) span.classList.add('current');
-    span.textContent = pinyinChars[i];
+    const isDone    = i < state.typedIndex;
+    const isCurrent = i === state.typedIndex;
+    const fromEnd   = total - 1 - i;
+    const isHidden  = !isDone && fromEnd < helpers.lettersHidden;
+    if (isDone) span.classList.add('done');
+    else if (isCurrent) span.classList.add('current');
+    if (isHidden) {
+      span.classList.add('hidden-letter');
+      span.textContent = '·';
+    } else {
+      span.textContent = pinyinChars[i];
+    }
     $pinyin.appendChild(span);
   }
   updateProgress();
@@ -1579,12 +1714,28 @@ function updateProgress() {
 }
 
 function renderPinyinProgress() {
-  // Lighter than full re-render; just update class names on existing spans
+  // Light re-render: update classes + reveal any previously-hidden letters
+  // that have now been typed (so the user gets visual confirmation of what
+  // their keypress was).
+  const c = state.current;
+  const pinyinChars = [...c.p];
+  const total = pinyinChars.length;
+  const helpers = state.currentHelpers;
   const spans = $pinyin.querySelectorAll('.letter');
   spans.forEach((sp, i) => {
-    sp.classList.remove('done', 'current');
-    if (i < state.typedIndex) sp.classList.add('done');
-    else if (i === state.typedIndex) sp.classList.add('current');
+    sp.classList.remove('done', 'current', 'hidden-letter');
+    const isDone    = i < state.typedIndex;
+    const isCurrent = i === state.typedIndex;
+    const fromEnd   = total - 1 - i;
+    const isHidden  = !isDone && fromEnd < helpers.lettersHidden;
+    if (isDone) sp.classList.add('done');
+    else if (isCurrent) sp.classList.add('current');
+    if (isHidden) {
+      sp.classList.add('hidden-letter');
+      sp.textContent = '·';
+    } else {
+      sp.textContent = pinyinChars[i];
+    }
   });
   updateProgress();
 }
@@ -1592,10 +1743,10 @@ function renderPinyinProgress() {
 function setExpectedKey() {
   document.querySelectorAll('.key.expected').forEach(k => k.classList.remove('expected'));
   if (state.awaitingAdvance) return;
-  // Keyboard "next key" hint is the second helper to disappear (after pinyin).
-  // The keyboard still shows the keys you press at stage 2+ — it just stops
-  // cueing the next correct one.
-  if (state.currentStage >= 2) return;
+  // Keyboard "next key" hint is the first helper to disappear (otherwise it
+  // would spell each letter for the user). The keyboard still shows the keys
+  // you press — it just stops cueing the next correct one.
+  if (!state.currentHelpers || !state.currentHelpers.showKbdHint) return;
   const c = state.current;
   if (!c) return;
   const next = c.t[state.typedIndex];
@@ -1658,43 +1809,67 @@ function nextCharacter() {
   const s = state.perChar.get(state.current.h) || emptyStats();
   s.mistakesThisAttempt = 0;
   state.perChar.set(state.current.h, s);
-  state.currentStage = getStage(s);
+
+  // Compute which helpers apply. Chill mode keeps everything on (except
+  // pinyin, optionally, if the hide-pinyin toggle is enabled).
+  state.currentHelpers = state.chillMode
+    ? chillHelpers(state.current.t.length)
+    : getHelpers(s.progress, state.current.t.length);
 
   renderCharacter();
   setExpectedKey();
 
-  // Sound is the last helper to disappear — it auto-plays through stages 0-2.
-  // At stage 3 the player must recall the sound themselves (Space still replays).
-  if (state.currentStage < 3) {
+  // Sound auto-plays only while it's still a helper. Once removed, Space
+  // still replays on demand for the player who wants a manual hint.
+  if (state.currentHelpers.autoSound) {
     speak(state.current.h);
   }
 }
 
 function completeCharacter() {
   state.charsCompleted++;
-  state.lifetime.totalChars++;
-  saveLifetime();
 
-  const s = state.perChar.get(state.current.h);
-  s.attempts++;
+  const s        = state.perChar.get(state.current.h);
+  const cleanRun = (s.mistakesThisAttempt || 0) === 0;
 
-  const wasMastered        = isMastered(s);
-  const everMasteredBefore = !!s.everMastered;
-  const cleanRun           = (s.mistakesThisAttempt || 0) === 0;
+  // Streak is a session feedback signal — it works in both modes.
+  if (cleanRun) state.streak++; else state.streak = 0;
 
-  if (cleanRun) {
-    // Clean run advances progress (capped at the mastery threshold).
-    s.progress = Math.min((s.progress || 0) + 1, MASTERY_AT);
-    state.streak++;
-  } else {
-    // Any mistake during this attempt rolls progress back one step,
-    // so a hint that had been removed may reappear next time. Also
-    // un-masters a character if the user fumbles a "mastered" review.
-    s.progress = Math.max((s.progress || 0) - 1, 0);
-    state.streak = 0;
+  // ---- Chill mode: visual feedback only, no persistence / mastery / achievements.
+  if (state.chillMode) {
+    const delta = 5 + (cleanRun ? Math.min(state.streak, 30) : 0);
+    state.score += delta;
+    flashChar('correct');
+    updateStatsDisplay({ scoreDelta: delta });
+    state.awaitingAdvance = true;
+    setExpectedKey();
+    setTimeout(() => {
+      nextCharacter();
+      updateStatsDisplay();
+    }, 240);
+    return;
   }
 
-  const nowMastered  = isMastered(s);
+  // ---- Practice mode (mastery flow).
+  state.lifetime.totalChars++;
+  saveLifetime();
+  s.attempts++;
+
+  const masteryAt          = getMasteryAt(state.current.t.length);
+  const wasMastered        = isMastered(s, state.current.h);
+  const everMasteredBefore = !!s.everMastered;
+
+  if (cleanRun) {
+    // Clean run advances progress (capped at this character's mastery point).
+    s.progress = Math.min((s.progress || 0) + 1, masteryAt);
+  } else {
+    // Any mistake during this attempt rolls progress back one step, so a
+    // hint that had been removed may reappear next time. Also un-masters a
+    // character if the user fumbles a "mastered" review.
+    s.progress = Math.max((s.progress || 0) - 1, 0);
+  }
+
+  const nowMastered  = isMastered(s, state.current.h);
   const justMastered = !wasMastered && nowMastered;
   const lostMastery  =  wasMastered && !nowMastered;
   if (nowMastered) s.everMastered = true;
@@ -1750,15 +1925,18 @@ function handleLetter(letter) {
     state.keysWrong++;
     state.consecutiveWrongKeys++;
     const s = state.perChar.get(c.h) || emptyStats();
-    s.errors++;
     s.mistakesThisAttempt = (s.mistakesThisAttempt || 0) + 1;
     state.perChar.set(c.h, s);
-    savePerChar();
+    if (!state.chillMode) {
+      // Practice mode: errors and persistence count; chill mode skips this.
+      s.errors++;
+      savePerChar();
+    }
     state.score = Math.max(0, state.score - 1);
     flashKey(letter, 'wrong-flash', 200);
     flashChar('wrong');
     updateStatsDisplay({ scoreDelta: -1 });
-    checkPassiveAchievements();
+    if (!state.chillMode) checkPassiveAchievements();
   }
 }
 
@@ -1842,6 +2020,8 @@ function clearAllProgress() {
 // ===================== Init =====================
 buildKeyboard();
 updateMuteUI();
+updateChillUI();
+updateHidePinyinUI();
 updateMasteredDisplay();
 renderAchievementsSidebar();
 // Retroactively unlock any mastery / volume achievements based on loaded state.
@@ -1851,6 +2031,8 @@ nextCharacter();
 updateStatsDisplay();
 
 $muteBtn.addEventListener('click', toggleMute);
+$chillBtn.addEventListener('click', toggleChillMode);
+$hidePinyinBtn.addEventListener('click', toggleHidePinyin);
 $char.addEventListener('click', replayCurrent);
 window.addEventListener('keydown', onKeyDown);
 window.addEventListener('keyup', onKeyUp);
