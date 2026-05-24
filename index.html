@@ -160,6 +160,40 @@
     color: #ffd166;
     transition: color 0.2s;
   }
+  .curriculum-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0 14px 0 0;
+    margin: 0;
+    text-align: right;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%237a8294' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: 8px;
+    transition: color 0.12s;
+  }
+  .curriculum-select:hover,
+  .curriculum-select:focus {
+    color: var(--text);
+    outline: none;
+  }
+  .curriculum-select option {
+    background: var(--panel);
+    color: var(--text);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 13px;
+    font-weight: 400;
+  }
 
   /* ---------- Main ---------- */
   main {
@@ -573,8 +607,8 @@
           <span class="stat-label">Streak</span>
           <span id="streak" class="stat-value">0</span>
         </div>
-        <div class="stat stat-mastered">
-          <span class="stat-label">Mastered</span>
+        <div class="stat stat-mastered" title="Mastered characters in the selected curriculum">
+          <select id="curriculumSelect" class="stat-label curriculum-select" aria-label="Curriculum"></select>
           <span id="mastered" class="stat-value mastered-val">0<span class="stat-total"> / 0</span></span>
         </div>
       </div>
@@ -1102,6 +1136,175 @@ const DICT_RAW = `
 北 běi bei | north
 街 jiē jie | street
 桥 qiáo qiao | bridge
+
+入 rù ru | to enter (radical)
+力 lì li | strength, power (radical)
+刀 dāo dao | knife (radical)
+又 yòu you | again, also (radical)
+土 tǔ tu | earth, soil (radical)
+子 zǐ zi | child, son (radical)
+巾 jīn jin | towel, cloth (radical)
+弓 gōng gong | bow, weapon (radical)
+戈 gē ge | dagger-axe (radical)
+木 mù mu | tree, wood (radical)
+王 wáng wang | king (radical)
+田 tián tian | field, paddy (radical)
+皮 pí pi | skin, leather (radical)
+目 mù mu | eye (radical, 眼 = eye)
+石 shí shi | stone, rock (radical)
+禾 hé he | grain, cereal (radical)
+穴 xué xue | cave, hole (radical)
+立 lì li | to stand (radical)
+竹 zhú zhu | bamboo (radical)
+网 wǎng wang | net, web (radical)
+羊 yáng yang | sheep, goat (radical)
+舟 zhōu zhou | boat (radical)
+色 sè se | color, look (radical)
+言 yán yan | speech, words (radical)
+豆 dòu dou | bean (radical)
+足 zú zu | foot, enough (radical)
+辛 xīn xin | bitter, hardship (radical)
+酉 yǒu you | wine vessel (radical)
+金 jīn jin | metal, gold (radical)
+食 shí shi | food, to eat (radical)
+首 shǒu shou | head, first (radical)
+骨 gǔ gu | bone (radical)
+鬼 guǐ gui | ghost, spirit (radical)
+鹿 lù lu | deer (radical)
+龙 lóng long | dragon (radical)
+龟 guī gui | turtle (radical)
+革 gé ge | leather, hide (radical)
+麻 má ma | hemp, numb (radical)
+页 yè ye | page, leaf (radical)
+贝 bèi bei | shell, treasure (radical)
+
+丨 gǔn gun | vertical stroke (radical)
+丶 zhǔ zhu | dot stroke (radical)
+丿 piě pie | left-falling stroke (radical)
+乙 yǐ yi | second, bend (radical)
+亅 jué jue | hook stroke (radical)
+亠 tóu tou | lid, top (radical)
+几 jǐ ji | small table, how many (radical)
+冂 jiōng jiong | down box (radical)
+冖 mì mi | cover (radical)
+冫 bīng bing | ice (radical)
+凵 kǎn kan | open container (radical)
+勹 bāo bao | to wrap (radical)
+匕 bǐ bi | spoon, dagger (radical)
+匚 fāng fang | right-open box (radical)
+匸 xì xi | hiding box (radical)
+卜 bǔ bu | to divine (radical)
+卩 jié jie | seal (radical)
+厂 chǎng chang | cliff, factory (radical)
+厶 sī si | private (radical)
+囗 wéi wei | enclosure (radical, large box)
+士 shì shi | scholar, warrior (radical)
+夂 zhǐ zhi | winter, slow (radical)
+夊 suī sui | go slowly (radical)
+夕 xī xi | evening, sunset (radical)
+宀 mián mian | roof (radical)
+寸 cùn cun | inch (radical)
+尢 wāng wang | lame (radical)
+尸 shī shi | corpse (radical)
+屮 chè che | sprout (radical)
+巛 chuān chuan | river (radical)
+幺 yāo yao | tiny, young (radical)
+广 guǎng guang | shelter, wide (radical)
+廴 yǐn yin | long stride (radical)
+廾 gǒng gong | join hands (radical)
+弋 yì yi | to shoot (radical)
+彐 jì ji | snout (radical)
+彡 shān shan | bristles (radical)
+彳 chì chi | step (radical)
+户 hù hu | door, household (radical)
+支 zhī zhi | branch (radical)
+攴 pū pu | to tap (radical)
+攵 pū pu | tap variant (radical)
+文 wén wen | text, language (radical)
+斗 dǒu dou | dipper, fight (radical)
+斤 jīn jin | axe, weight unit (radical)
+无 wú wu | nothing (radical)
+曰 yuē yue | to say (radical)
+欠 qiàn qian | lack, owe (radical)
+止 zhǐ zhi | to stop (radical)
+歹 dǎi dai | bad, death (radical)
+殳 shū shu | weapon (radical)
+毋 wú wu | do not (radical)
+氏 shì shi | clan, family (radical)
+爪 zhǎo zhao | claw (radical)
+爻 yáo yao | divination lines (radical)
+爿 pán pan | half tree (radical)
+片 piàn pian | slice, piece (radical)
+犬 quǎn quan | dog (radical)
+玄 xuán xuan | dark, mystery (radical)
+玉 yù yu | jade (radical)
+瓦 wǎ wa | tile (radical)
+甘 gān gan | sweet (radical)
+皿 mǐn min | dish, vessel (radical)
+矛 máo mao | spear (radical)
+矢 shǐ shi | arrow (radical)
+示 shì shi | to show (radical)
+禸 róu rou | track (radical)
+糸 mì mi | silk (radical, traditional)
+缶 fǒu fou | earthen jar (radical)
+羽 yǔ yu | feather (radical)
+而 ér er | and, but (radical)
+耒 lěi lei | plow (radical)
+聿 yù yu | writing brush (radical)
+臣 chén chen | minister (radical)
+至 zhì zhi | to arrive (radical)
+臼 jiù jiu | mortar (radical)
+舛 chuǎn chuan | oppose (radical)
+艮 gěn gen | stopping (radical)
+艸 cǎo cao | grass (radical, traditional)
+虍 hū hu | tiger pattern (radical)
+虫 chóng chong | insect (radical)
+血 xuè xue | blood (radical)
+襾 yà ya | cover (radical)
+谷 gǔ gu | valley (radical)
+豕 shǐ shi | pig (radical)
+豸 zhì zhi | badger, worm (radical)
+赤 chì chi | red, bare (radical)
+辰 chén chen | morning star (radical)
+邑 yì yi | city (radical, 阝right)
+釆 biàn bian | distinguish (radical)
+阜 fù fu | mound (radical, 阝left)
+隶 lì li | slave (radical)
+隹 zhuī zhui | short-tailed bird (radical)
+青 qīng qing | blue, green, young (radical)
+韦 wéi wei | tanned leather (radical, simplified)
+韭 jiǔ jiu | leek (radical)
+音 yīn yin | sound (radical)
+卤 lǔ lu | salt (radical, simplified)
+麦 mài mai | wheat (radical, simplified)
+髟 biāo biao | long hair (radical)
+鬥 dòu dou | to fight (radical)
+鬯 chàng chang | sacrificial wine (radical)
+鬲 lì li | cauldron (radical)
+黍 shǔ shu | millet (radical)
+黹 zhǐ zhi | embroidery (radical)
+黾 miǎn mian | frog (radical, simplified)
+鼎 dǐng ding | tripod cauldron (radical)
+鼓 gǔ gu | drum (radical)
+鼠 shǔ shu | rat, rodent (radical)
+龠 yuè yue | flute (radical)
+齐 qí qi | even, neat (radical, simplified)
+齿 chǐ chi | tooth (radical, simplified)
+亻 rén ren | person radical (component, left side)
+氵 shuǐ shui | water radical (three dots)
+扌 shǒu shou | hand radical (left side)
+艹 cǎo cao | grass radical (top)
+辶 chuò chuo | walk radical (bottom)
+阝 fù fu | mound/city radical
+忄 xīn xin | heart radical (left side)
+犭 quǎn quan | dog radical (left side)
+礻 shì shi | show radical (left side)
+衤 yī yi | clothes radical (left side)
+钅 jīn jin | metal radical (simplified)
+饣 shí shi | food radical (simplified)
+纟 sī si | silk radical (simplified)
+讠 yán yan | speech radical (simplified)
+灬 huǒ huo | fire radical (four dots)
 `;
 
 function parseDict(raw) {
@@ -1196,7 +1399,72 @@ function savePerChar() {
   });
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); } catch {}
 }
+// ===================== Curriculum =====================
+// Chinese radicals (部首). Covers the 214 traditional Kangxi radicals that
+// have meaningful standalone forms in simplified Chinese, plus 15 common
+// component-only variant forms (亻 氵 扌 艹 辶 阝 忄 犭 礻 衤 钅 饣 纟 讠 灬).
+// All ~220 are present in DICT so the radicals curriculum is a real subset.
+const RADICAL_HANZI = [
+  // Strokes & basics (Kangxi 1-29)
+  '一','丨','丶','丿','乙','亅','二','亠',
+  '人','亻','儿','入','八','冂','冖','冫','几','凵',
+  '刀','力','勹','匕','匚','匸','十','卜','卩','厂','厶','又',
+  // Earth & people (30-59)
+  '口','囗','土','士','夂','夊','夕','大','女','子','宀','寸',
+  '小','尢','尸','屮','山','巛','工','己','巾','干',
+  '幺','广','廴','廾','弋','弓','彐','彡','彳',
+  // Heart, hand, nature (60-87)
+  '心','忄','戈','户','手','扌','支','攴','攵','文','斗','斤','方',
+  '无','日','曰','月','木','欠','止','歹','殳','毋','比','毛','氏','气',
+  '水','氵','火','灬','爪',
+  // Beasts, jade, fields (88-115)
+  '父','爻','爿','片','牙','牛','犬','犭','玄','玉','瓜','瓦','甘',
+  '生','用','田','白','皮','皿','目','矛','矢','石','示','礻','禸','禾',
+  // Cave, bamboo, life (116-145)
+  '穴','立','竹','米','糸','纟','缶','网','羊','羽','老','而','耒','耳','聿',
+  '肉','臣','自','至','臼','舌','舛','舟','艮','色','艸','艹','虍','虫','血',
+  '行','衣','衤',
+  // Speech, things, body (146-175)
+  '襾','见','角','言','讠','谷','豆','豕','豸','贝','赤','走','足','身','车',
+  '辛','辰','辶','邑','酉','釆','里','金','钅','长','门','阜','阝','隶','隹',
+  '雨','青','非',
+  // Face to flight (176-214)
+  '面','革','韦','韭','音','页','风','飞','食','饣','首','香','马','骨','高',
+  '髟','鬥','鬯','鬲','鬼','鱼','鸟','卤','鹿','麦','麻','黄','黍','黑','黹',
+  '黾','鼎','鼓','鼠','鼻','齐','齿','龙','龟','龠'
+];
+
+// Curricula are picked in DICT order (which is roughly frequency order) for
+// the numbered levels; the Radicals curriculum is an explicit hanzi list.
+const CURRICULA = [
+  { id: 'level1',   label: 'Level 1',   size: 100 },
+  { id: 'level2',   label: 'Level 2',   size: 200 },
+  { id: 'level3',   label: 'Level 3',   size: 350 },
+  { id: 'all',      label: 'All' },
+  { id: 'radicals', label: 'Radicals',  hanzi: RADICAL_HANZI },
+];
+function getCurriculum() {
+  return CURRICULA.find(c => c.id === state.curriculum) || CURRICULA.find(c => c.id === 'all');
+}
+function getCurriculumChars() {
+  const c = getCurriculum();
+  if (c.hanzi) return c.hanzi.map(h => DICT_BY_H.get(h)).filter(Boolean);
+  return c.size ? DICT.slice(0, c.size) : DICT;
+}
+function getCurriculumTotal() {
+  return getCurriculumChars().length;
+}
+
 function countMastered() {
+  let n = 0;
+  getCurriculumChars().forEach(d => {
+    if (isMastered(state.perChar.get(d.h), d.h)) n++;
+  });
+  return n;
+}
+function countMasteredAll() {
+  // Lifetime mastery across the full dictionary — used by achievements so
+  // milestones don't suddenly un-trigger when the user switches curricula.
   let n = 0;
   DICT.forEach(d => {
     if (isMastered(state.perChar.get(d.h), d.h)) n++;
@@ -1211,23 +1479,23 @@ function countMastered() {
 const ACHIEVEMENTS = [
   // Mastery milestones — the "growing up" series
   { id: 'm1',   icon: '🌱', title: 'First Sprout',     desc: 'Master your first character',
-    check: () => countMastered() >= 1 },
+    check: () => countMasteredAll() >= 1 },
   { id: 'm10',  icon: '👶', title: 'Chinese Newborn',  desc: 'Master 10 characters',
-    check: () => countMastered() >= 10 },
+    check: () => countMasteredAll() >= 10 },
   { id: 'm25',  icon: '🧒', title: 'Kindergartener',   desc: 'Master 25 characters',
-    check: () => countMastered() >= 25 },
+    check: () => countMasteredAll() >= 25 },
   { id: 'm50',  icon: '🎒', title: 'Schoolkid',        desc: 'Master 50 characters',
-    check: () => countMastered() >= 50 },
+    check: () => countMasteredAll() >= 50 },
   { id: 'm100', icon: '📚', title: 'Bookworm',         desc: 'Master 100 characters',
-    check: () => countMastered() >= 100 },
+    check: () => countMasteredAll() >= 100 },
   { id: 'm200', icon: '🎓', title: 'Scholar',          desc: 'Master 200 characters',
-    check: () => countMastered() >= 200 },
+    check: () => countMasteredAll() >= 200 },
   { id: 'm300', icon: '🧙', title: 'Wise One',         desc: 'Master 300 characters',
-    check: () => countMastered() >= 300 },
+    check: () => countMasteredAll() >= 300 },
   { id: 'm400', icon: '🐉', title: 'Dragon Sage',      desc: 'Master 400 characters',
-    check: () => countMastered() >= 400 },
+    check: () => countMasteredAll() >= 400 },
   { id: 'mAll', icon: '🏛️', title: 'Imperial Scholar', desc: 'Master every character in the deck',
-    check: () => countMastered() >= TOTAL_CHARS },
+    check: () => countMasteredAll() >= TOTAL_CHARS },
 
   // Persistence — celebrate not quitting
   { id: 'persist',  icon: '💪', title: 'Don’t Give Up',
@@ -1393,6 +1661,7 @@ const state = {
   muted: localStorage.getItem('ct-muted') === '1',
   chillMode: localStorage.getItem('ct-chill') === '1',
   hidePinyinInChill: localStorage.getItem('ct-chill-hide-pinyin') === '1',
+  curriculum: localStorage.getItem('ct-curriculum') || 'all',
   currentHelpers: { lettersHidden: 0, showKbdHint: true, autoSound: true, showTranslation: true },
   consecutiveWrongKeys: 0,
   achievements: new Map(),
@@ -1441,28 +1710,28 @@ const ICON_MUTED   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 
 // ===================== Selection (adaptive) =====================
 function pickNext() {
-  // Chill mode: ignore the curriculum entirely — uniform random over the whole
-  // dictionary, with the same short avoid-list to prevent immediate repeats.
+  const corpus = getCurriculumChars();
+
+  // Chill mode: uniform random over the current curriculum, with the same
+  // short avoid-list to prevent immediate repeats.
   if (state.chillMode) {
     const avoid = new Set(state.recentChars.slice(-4));
-    let pool = DICT.filter(d => !avoid.has(d.h));
-    if (pool.length === 0) pool = DICT;
+    let pool = corpus.filter(d => !avoid.has(d.h));
+    if (pool.length === 0) pool = corpus.length ? corpus : DICT;
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
   // Curriculum model: at any moment the user is working on a small "active pool"
-  // of up to ACTIVE_POOL_SIZE unmastered characters. The pool is the union of:
-  //   1. every character the user has started but not yet mastered, plus
-  //   2. enough fresh (never-attempted) characters from DICT order to top
-  //      the pool up to ACTIVE_POOL_SIZE.
-  // As characters master, they leave the pool and the next fresh char from
-  // DICT takes their slot — so the user faces a focused rotation instead of
-  // a scattered draw from the whole dictionary.
-  const inProgress = DICT.filter(d => {
+  // of up to ACTIVE_POOL_SIZE unmastered characters drawn from the selected
+  // curriculum. The pool is the union of:
+  //   1. every character in the curriculum the user has started but not mastered,
+  //   2. enough fresh (never-attempted) curriculum characters to top the pool up.
+  // As characters master, they leave the pool and the next fresh one slides in.
+  const inProgress = corpus.filter(d => {
     const s = state.perChar.get(d.h);
     return s && s.attempts > 0 && !isMastered(s, d.h);
   });
-  const fresh = DICT.filter(d => {
+  const fresh = corpus.filter(d => {
     const s = state.perChar.get(d.h);
     return !s || s.attempts === 0;
   });
@@ -1471,9 +1740,9 @@ function pickNext() {
 
   const avoid = new Set(state.recentChars.slice(-4));
 
-  // Small probability to surface a previously-mastered character for a quick
-  // retention check — only if there's something to review.
-  const masteredPool = DICT.filter(d => isMastered(state.perChar.get(d.h), d.h) && !avoid.has(d.h));
+  // Small probability to surface a previously-mastered character (from the
+  // current curriculum) for a quick retention check.
+  const masteredPool = corpus.filter(d => isMastered(state.perChar.get(d.h), d.h) && !avoid.has(d.h));
   if (masteredPool.length > 0 && active.length > 0 && Math.random() < MASTERED_REVIEW_PROB) {
     return masteredPool[Math.floor(Math.random() * masteredPool.length)];
   }
@@ -1482,11 +1751,11 @@ function pickNext() {
   let pool = active.filter(d => !avoid.has(d.h));
   if (pool.length === 0) pool = active;
   if (pool.length === 0) {
-    // All chars mastered — fall back to mastered review.
+    // Whole curriculum mastered — fall back to a mastered-pool review.
     if (masteredPool.length > 0) {
       return masteredPool[Math.floor(Math.random() * masteredPool.length)];
     }
-    return DICT[0];
+    return corpus[0] || DICT[0];
   }
 
   const weights = pool.map(d => {
@@ -1519,10 +1788,35 @@ const $muteBtn = document.getElementById('muteBtn');
 const $playArea = document.getElementById('playArea');
 const $mastered = document.getElementById('mastered');
 const $stageDots = document.getElementById('stageDots');
+const $curriculumSelect = document.getElementById('curriculumSelect');
+
+function buildCurriculumOptions() {
+  if (!$curriculumSelect) return;
+  $curriculumSelect.innerHTML = '';
+  CURRICULA.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    const size = c.hanzi ? c.hanzi.length : (c.size || DICT.length);
+    opt.textContent = c.label + ' (' + size + ')';
+    if (state.curriculum === c.id) opt.selected = true;
+    $curriculumSelect.appendChild(opt);
+  });
+}
+function onCurriculumChange() {
+  state.curriculum = $curriculumSelect.value;
+  localStorage.setItem('ct-curriculum', state.curriculum);
+  updateMasteredDisplay();
+  // Clear typing state and pick a character from the new curriculum.
+  state.typedIndex = 0;
+  state.awaitingAdvance = false;
+  state.recentChars = [];
+  nextCharacter();
+  updateStatsDisplay();
+}
 
 function updateMasteredDisplay(opts = {}) {
   const n = countMastered();
-  $mastered.innerHTML = n + '<span class="stat-total"> / ' + TOTAL_CHARS + '</span>';
+  $mastered.innerHTML = n + '<span class="stat-total"> / ' + getCurriculumTotal() + '</span>';
   if (opts.gold) {
     $mastered.classList.add('flash-gold');
     setTimeout(() => $mastered.classList.remove('flash-gold'), 900);
@@ -2019,6 +2313,7 @@ function clearAllProgress() {
 
 // ===================== Init =====================
 buildKeyboard();
+buildCurriculumOptions();
 updateMuteUI();
 updateChillUI();
 updateHidePinyinUI();
@@ -2033,6 +2328,7 @@ updateStatsDisplay();
 $muteBtn.addEventListener('click', toggleMute);
 $chillBtn.addEventListener('click', toggleChillMode);
 $hidePinyinBtn.addEventListener('click', toggleHidePinyin);
+$curriculumSelect.addEventListener('change', onCurriculumChange);
 $char.addEventListener('click', replayCurrent);
 window.addEventListener('keydown', onKeyDown);
 window.addEventListener('keyup', onKeyUp);
