@@ -113,6 +113,16 @@
   }
   .icon-btn.chill-only { display: none; }
   body.chill-mode .icon-btn.chill-only { display: flex; }
+  .icon-btn.text-btn {
+    font-family: "PingFang SC", "Microsoft YaHei", "SimHei", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+  }
+  .icon-btn.traditional-active {
+    color: var(--accent);
+    border-color: rgba(94, 234, 212, 0.55);
+    background: rgba(94, 234, 212, 0.08);
+  }
   body.chill-mode .stage-dots,
   body.chill-mode .stat-mastered {
     opacity: 0.35;
@@ -614,6 +624,7 @@
       </div>
       <button id="chillBtn" class="icon-btn" aria-label="Toggle chill mode" title="Chill mode — no pressure, all hints"></button>
       <button id="hidePinyinBtn" class="icon-btn chill-only" aria-label="Toggle pinyin visibility" title="Hide pinyin in chill mode"></button>
+      <button id="traditionalBtn" class="icon-btn text-btn" aria-label="Toggle simplified/traditional" title="Switch to Traditional Chinese">繁</button>
       <button id="muteBtn"  class="icon-btn" aria-label="Toggle sound" title="Toggle sound (`)"></button>
     </div>
   </header>
@@ -1196,7 +1207,7 @@ const DICT_RAW = `
 卜 bǔ bu | to divine (radical)
 卩 jié jie | seal (radical)
 厂 chǎng chang | cliff, factory (radical)
-厶 sī si | private (radical)
+厶 mǒu mou | certain (also sī, ancient 私) (radical)
 囗 wéi wei | enclosure (radical, large box)
 士 shì shi | scholar, warrior (radical)
 夂 zhǐ zhi | winter, slow (radical)
@@ -1455,6 +1466,46 @@ function getCurriculumTotal() {
   return getCurriculumChars().length;
 }
 
+// ===================== Simplified ↔ Traditional =====================
+// Only the displayed glyph swaps; pinyin, typing, mastery, and TTS pronunciation
+// are identical across scripts. This map covers the characters in DICT that
+// have a different traditional form; everything not in the map renders
+// unchanged. Polysemous chars (e.g. 干 → 乾 vs 幹) use the form that matches
+// the meaning in this dictionary's entry.
+const S2T = {
+  '没':'沒','这':'這','后':'後','里':'裡','国':'國','学':'學','师':'師',
+  '听':'聽','说':'說','读':'讀','写':'寫','来':'來','进':'進','开':'開',
+  '关':'關','欢':'歡','爱':'愛','会':'會','还':'還','对':'對','错':'錯',
+  '时':'時','么':'麼','谁':'誰','为':'為','红':'紅','黄':'黃','蓝':'藍',
+  '绿':'綠','长':'長','风':'風','树':'樹','鸟':'鳥','鱼':'魚','马':'馬',
+  '钱':'錢','买':'買','卖':'賣','车':'車','门':'門','书':'書','电':'電',
+  '脑':'腦','头':'頭','脚':'腳','体':'體','觉':'覺','请':'請','问':'問',
+  '谢':'謝','系':'係','见':'見','们':'們','别':'別','个':'個','张':'張',
+  '块':'塊','双':'雙','儿':'兒','孙':'孫','爷':'爺','亲':'親','邻':'鄰',
+  '帮':'幫','试':'試','画':'畫','给':'給','带':'帶','让':'讓','认':'認',
+  '识':'識','记':'記','换':'換','变':'變','结':'結','离':'離','诉':'訴',
+  '准':'準','备':'備','习':'習','复':'復','赢':'贏','输':'輸','讲':'講',
+  '报':'報','谈':'談','难':'難','饿':'餓','饱':'飽','干':'乾','净':'淨',
+  '脏':'髒','静':'靜','简':'簡','单':'單','杂':'雜','帅':'帥','聪':'聰',
+  '强':'強','轻':'輕','浅':'淺','远':'遠','咸':'鹹','满':'滿','紧':'緊',
+  '松':'鬆','热':'熱','凉':'涼','阴':'陰','饭':'飯','面':'麵','苹':'蘋',
+  '盐':'鹽','汤':'湯','饺':'餃','饼':'餅','医':'醫','园':'園','机':'機',
+  '场':'場','厅':'廳','银':'銀','邮':'郵','厕':'廁','厨':'廚','图':'圖',
+  '馆':'館','飞':'飛','铁':'鐵','妈':'媽','发':'髮','脸':'臉','裤':'褲',
+  '袜':'襪','点':'點','钟':'鐘','雾':'霧','云':'雲','吗':'嗎','着':'著',
+  '过':'過','经':'經','总':'總','从':'從','刚':'剛','许':'許','须':'須',
+  '应':'應','该':'該','价':'價','贵':'貴','费':'費','样':'樣','虽':'雖',
+  '兴':'興','乐':'樂','伤':'傷','气':'氣','奋':'奮','担':'擔','动':'動',
+  '办':'辦','验':'驗','闻':'聞','资':'資','划':'劃','计':'計','决':'決',
+  '选':'選','题':'題','东':'東','桥':'橋','龙':'龍','龟':'龜','页':'頁',
+  '贝':'貝','网':'網','广':'廣','户':'戶','无':'無','虫':'蟲','韦':'韋',
+  '卤':'鹵','麦':'麥','黾':'黽','齐':'齊','齿':'齒','钅':'釒','饣':'飠',
+  '纟':'糹','讠':'訁'
+};
+function displayHanzi(h) {
+  return state.traditional ? (S2T[h] || h) : h;
+}
+
 function countMastered() {
   let n = 0;
   getCurriculumChars().forEach(d => {
@@ -1661,6 +1712,7 @@ const state = {
   muted: localStorage.getItem('ct-muted') === '1',
   chillMode: localStorage.getItem('ct-chill') === '1',
   hidePinyinInChill: localStorage.getItem('ct-chill-hide-pinyin') === '1',
+  traditional: localStorage.getItem('ct-traditional') === '1',
   curriculum: localStorage.getItem('ct-curriculum') || 'all',
   currentHelpers: { lettersHidden: 0, showKbdHint: true, autoSound: true, showTranslation: true },
   consecutiveWrongKeys: 0,
@@ -1922,6 +1974,24 @@ function toggleHidePinyin() {
   updateHidePinyinUI();
   if (state.chillMode) applyCurrentHelpers();
 }
+// ===================== Traditional / Simplified =====================
+const $traditionalBtn = document.getElementById('traditionalBtn');
+function updateTraditionalUI() {
+  if (!$traditionalBtn) return;
+  // Button shows the OPPOSITE script — what you'll get if you click it.
+  $traditionalBtn.textContent = state.traditional ? '简' : '繁';
+  $traditionalBtn.title = state.traditional
+    ? 'Switch to Simplified Chinese'
+    : 'Switch to Traditional Chinese';
+  $traditionalBtn.classList.toggle('traditional-active', state.traditional);
+}
+function toggleTraditional() {
+  state.traditional = !state.traditional;
+  localStorage.setItem('ct-traditional', state.traditional ? '1' : '0');
+  updateTraditionalUI();
+  if (state.current) renderCharacter();
+}
+
 function applyCurrentHelpers() {
   if (!state.current) return;
   if (state.chillMode) {
@@ -1961,7 +2031,7 @@ function buildKeyboard() {
 
 function renderCharacter() {
   const c = state.current;
-  $char.textContent = c.h;
+  $char.textContent = displayHanzi(c.h);
   $translation.textContent = c.en || '';
 
   const helpers  = state.currentHelpers;
@@ -2317,6 +2387,7 @@ buildCurriculumOptions();
 updateMuteUI();
 updateChillUI();
 updateHidePinyinUI();
+updateTraditionalUI();
 updateMasteredDisplay();
 renderAchievementsSidebar();
 // Retroactively unlock any mastery / volume achievements based on loaded state.
@@ -2328,6 +2399,7 @@ updateStatsDisplay();
 $muteBtn.addEventListener('click', toggleMute);
 $chillBtn.addEventListener('click', toggleChillMode);
 $hidePinyinBtn.addEventListener('click', toggleHidePinyin);
+$traditionalBtn.addEventListener('click', toggleTraditional);
 $curriculumSelect.addEventListener('change', onCurriculumChange);
 $char.addEventListener('click', replayCurrent);
 window.addEventListener('keydown', onKeyDown);
