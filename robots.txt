@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://skulitom.github.io/chinese-touch-typing/sitemap.xml

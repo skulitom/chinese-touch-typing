@@ -3,7 +3,76 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>中文 Touch Typing</title>
+
+<title>Chinese Touch Typing — Learn Mandarin Pinyin · 中文打字练习</title>
+<meta name="description" content="Free Mandarin Chinese touch typing trainer. Practice pinyin for 644 characters and 226 Kangxi radicals with adaptive mastery, audio pronunciation, and Simplified/Traditional support." />
+<meta name="keywords" content="chinese typing practice, mandarin pinyin typing, learn chinese typing, hsk typing, chinese radicals practice, pinyin typing game, touch typing chinese, 中文打字, 拼音输入, 汉字练习" />
+<meta name="author" content="skulitom" />
+<meta name="theme-color" content="#0b0d12" />
+<meta name="color-scheme" content="dark" />
+<meta name="robots" content="index, follow" />
+
+<link rel="canonical" href="https://skulitom.github.io/chinese-touch-typing/" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%230b0d12'/><text x='32' y='48' font-family='PingFang SC,Microsoft YaHei,sans-serif' font-size='42' text-anchor='middle' fill='%235eead4'>中</text></svg>" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://skulitom.github.io/chinese-touch-typing/" />
+<meta property="og:title" content="Chinese Touch Typing — Learn Mandarin Pinyin" />
+<meta property="og:description" content="Free Mandarin Chinese touch typing trainer. 644 characters, 226 Kangxi radicals, adaptive mastery, audio pronunciation, Simplified & Traditional support." />
+<meta property="og:image" content="https://skulitom.github.io/chinese-touch-typing/og-image.svg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="Chinese Touch Typing" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:locale:alternate" content="zh_CN" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:url" content="https://skulitom.github.io/chinese-touch-typing/" />
+<meta name="twitter:title" content="Chinese Touch Typing — Learn Mandarin Pinyin" />
+<meta name="twitter:description" content="Free Mandarin Chinese typing trainer with 644 characters, 226 radicals, adaptive mastery, and audio pronunciation." />
+<meta name="twitter:image" content="https://skulitom.github.io/chinese-touch-typing/og-image.svg" />
+
+<!-- Structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Chinese Touch Typing",
+  "alternateName": "中文打字练习",
+  "description": "Free Mandarin Chinese touch typing trainer with 644 characters, 226 Kangxi radicals, adaptive mastery progression, audio pronunciation via Web Speech API, and Simplified/Traditional Chinese support.",
+  "url": "https://skulitom.github.io/chinese-touch-typing/",
+  "applicationCategory": "EducationalApplication",
+  "applicationSubCategory": "Language Learning",
+  "operatingSystem": "Any (web browser)",
+  "browserRequirements": "Requires a modern browser with JavaScript enabled",
+  "inLanguage": ["en", "zh-CN", "zh-Hant"],
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "creator": {
+    "@type": "Person",
+    "name": "skulitom",
+    "url": "https://github.com/skulitom"
+  },
+  "featureList": [
+    "Pinyin typing practice for 644 Mandarin characters",
+    "226 Kangxi radicals curriculum",
+    "Adaptive mastery progression with progressive helper removal",
+    "Web Speech API audio pronunciation",
+    "Live virtual keyboard with next-key hints",
+    "Simplified and Traditional Chinese display toggle",
+    "Achievement system with 22 unlockable badges",
+    "HSK 1-4 progressive curriculum levels",
+    "Chill mode for pressure-free exposure practice"
+  ]
+}
+</script>
+
 <style>
   :root {
     --bg: #0b0d12;
@@ -64,6 +133,19 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    margin: 0;
+  }
+  /* Visually-hidden content for screen readers and search-engine crawlers */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
   .title-dot {
     width: 8px; height: 8px;
@@ -598,7 +680,7 @@
 </head>
 <body>
   <header>
-    <div class="title"><span class="title-dot"></span><span id="titleText">中文 · Touch Typing</span></div>
+    <h1 class="title"><span class="title-dot"></span><span id="titleText">中文 · Touch Typing</span></h1>
     <div class="header-controls">
       <div class="stats">
         <div class="stat">
@@ -643,6 +725,28 @@
   </main>
 
   <aside id="achievements" class="achievements" aria-label="Achievements"></aside>
+
+  <!-- Content for search-engine crawlers; visually hidden but readable by SEO + assistive tech -->
+  <section class="sr-only" aria-hidden="true">
+    <h2>About Chinese Touch Typing</h2>
+    <p>Chinese Touch Typing is a free, browser-based Mandarin pinyin typing trainer. It covers 644 simplified Chinese characters across HSK 1 to HSK 4 vocabulary, plus 226 Kangxi radicals for character-recognition practice. Each character is shown with its pinyin, English translation, and an optional spoken pronunciation via the Web Speech API.</p>
+    <h3>Features</h3>
+    <ul>
+      <li>Pinyin typing practice for 644 Chinese hanzi</li>
+      <li>226 Kangxi radicals plus simplified component variants</li>
+      <li>Adaptive mastery progression that removes helpers one at a time</li>
+      <li>Live virtual keyboard with currently-pressed and next-expected key</li>
+      <li>Audio pronunciation in Mandarin via Web Speech API</li>
+      <li>Simplified Chinese and Traditional Chinese display toggle</li>
+      <li>Five curricula: Level 1 (100 chars), Level 2 (200), Level 3 (350), All (644), Radicals (226)</li>
+      <li>Chill mode for pressure-free exposure practice</li>
+      <li>22 achievements that reward mastery, persistence, speed, and practice volume</li>
+      <li>Local-storage persistence — no account, no tracking</li>
+      <li>Dark mode interface with tone-coloured pinyin</li>
+    </ul>
+    <h3>Who is it for</h3>
+    <p>Beginners learning Mandarin Chinese for the first time, HSK students preparing for typing-based exams, heritage speakers practicing pinyin input, and experienced Chinese typists looking for radical-recognition drills.</p>
+  </section>
 
   <div class="footer-hint">type the pinyin · <kbd>Space</kbd> replay · <kbd>`</kbd> mute · <kbd>Esc</kbd> reset session · <kbd>Shift+Esc</kbd> clear progress</div>
 
@@ -1199,7 +1303,7 @@ const DICT_RAW = `
 冂 jiōng jiong | down box (radical)
 冖 mì mi | cover (radical)
 冫 bīng bing | ice (radical)
-凵 kǎn kan | open container (radical)
+凵 chū chu | open container (radical, formally kǎn)
 勹 bāo bao | to wrap (radical)
 匕 bǐ bi | spoon, dagger (radical)
 匚 fāng fang | right-open box (radical)
